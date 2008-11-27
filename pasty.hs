@@ -1,4 +1,24 @@
+{-----------------------------------------------------------------
+ 
+  (c) 2008 Markus Dittrich 
+ 
+  This program is free software; you can redistribute it 
+  and/or modify it under the terms of the GNU General Public 
+  License Version 3 as published by the Free Software Foundation. 
+ 
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License Version 3 for more details.
+ 
+  You should have received a copy of the GNU General Public 
+  License along with this program; if not, write to the Free 
+  Software Foundation, Inc., 59 Temple Place - Suite 330, 
+  Boston, MA 02111-1307, USA.
 
+--------------------------------------------------------------------}
+
+-- imports
 import qualified Data.ByteString as B
 import qualified Data.ByteString.Char8 as BC
 import Data.List
@@ -6,6 +26,9 @@ import System.IO
 import System.IO.Error
 import System.Environment
 import Debug.Trace
+
+-- local imports
+import ByteStringHelper
 
 main :: IO ()
 main = 
@@ -17,8 +40,8 @@ main =
       Nothing -> print_usage 
       Just (selections,files) -> do
           contents <- read_files [] files
-          --paste_files selections contents
-
+          let output = paste_columns selections contents
+          mapM_ B.putStrLn output 
 
 
 {-|
@@ -26,7 +49,46 @@ main =
   NOTE: for now we assume an arbitrary number of spaces
         as column separators
 -}
+paste_columns :: [ColumnList] -> [B.ByteString] -> [B.ByteString]
+paste_columns _ []  = []
+paste_columns [] xs =
 
+  let 
+    sortedSplitByLine       = split_lines xs
+    --sortedSplitByLine = sortBy sort_by_length splitByLine 
+  in
+    walk_rows (head sortedSplitByLine) (tail sortedSplitByLine)
+
+  where
+    walk_rows :: [B.ByteString] -> [[B.ByteString]] -> [B.ByteString]
+    --walk_rows [] _      = []
+    walk_rows x []     = x
+    walk_rows x (y:ys) = walk_rows (merge [] x y) ys
+
+    
+    merge :: [B.ByteString] -> [B.ByteString] -> [B.ByteString] 
+          -> [B.ByteString]
+    merge acc []     _      = reverse acc
+    merge acc (i:is) []     = merge (i:acc) is []
+    merge acc (i:is) (j:js) = merge (B.append i j:acc) is js
+
+{-|
+  ordering function for list sorting by length, 
+  longest one first
+-}
+sort_by_length :: [a] -> [a] -> Ordering
+sort_by_length x y 
+  | length x == length y   = EQ
+  | length x >  length y   = LT
+  | otherwise              = GT
+
+
+{-|
+  split a ByteString into its constituent lines, i.e., bytes
+  separated by a newline '\n'
+-}
+split_lines :: [B.ByteString] -> [[B.ByteString]]
+split_lines = map (B.split newLineW) . equilize 
 
 
 {-|
@@ -143,3 +205,4 @@ strip_leading_char c a@(x:xs)
 print_usage :: IO ()
 print_usage = 
   putStrLn "Usage: pasty [-n a1,a2,...[:b1,b2,..]] file1 file2"  
+
