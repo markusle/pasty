@@ -22,9 +22,12 @@
   ByteStringHelper provides utility functions to deal with
   ByteStrings
 -}
-module ByteStringHelper ( remove_last_newline,
-                          equilize,
-                          newLineW
+module ByteStringHelper ( equilize,
+                          newLineW,
+                          remove_last_newline,
+                          space,
+                          split_into_items,
+                          split_into_lines
                         ) where
 
 -- imports
@@ -32,7 +35,7 @@ import Char
 import qualified Data.ByteString as B
 import qualified Data.ByteString.Char8 as BC
 import Word
-
+--import Debug.Trace
 
 {-|
   convert char into Word8
@@ -47,12 +50,18 @@ char_to_Word8 = fromIntegral . ord
 newLineW :: Word8
 newLineW = char_to_Word8 '\n'
 
+spaceW :: Word8
+spaceW = char_to_Word8 ' '
+
 
 {-|
   a few useful ByteStrings
 -}
 newLine :: B.ByteString
 newLine = BC.pack "\n"
+
+space :: B.ByteString
+space = BC.pack " "
 
 
 {-|
@@ -64,6 +73,22 @@ remove_last_newline :: B.ByteString -> B.ByteString
 remove_last_newline string 
   | B.last string == newLineW  = B.init string 
   | otherwise                  = string
+
+
+{-|
+  split a list of ByteStrings into its constituent lines, 
+  i.e., bytes separated by a newline '\n'
+-}
+split_into_lines :: [B.ByteString] -> [[B.ByteString]]
+split_into_lines = map (B.split newLineW) . equilize 
+
+
+{-|
+  split a single ByteString into its constituent items, i.e., bytes
+  separated by any number of spaceChars
+-}
+split_into_items :: B.ByteString -> [B.ByteString]
+split_into_items = B.split spaceW 
 
 
 {-| 
@@ -83,7 +108,7 @@ equilize items = pad_items [] maxLength items
 
     pad_items :: [B.ByteString] -> Int -> [B.ByteString] 
               -> [B.ByteString]
-    pad_items acc _ []     = acc
+    pad_items acc _ []     = reverse acc
     pad_items _   0 xs     = xs
     pad_items acc p (x:xs) = 
       pad_items (B.append x (add_newlines p x):acc) p xs
@@ -120,3 +145,6 @@ newlines num = cat_newlines [] num
 -}
 count_newlines :: B.ByteString -> Int
 count_newlines = length . B.findIndices ( == newLineW )
+
+
+
