@@ -1,0 +1,4 @@
+pasty is a comman line utility for pasting column centric ascii files
+written in Haskell.
+
+(C) 2008 Markus Dittrich
