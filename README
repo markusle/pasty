@@ -1,4 +1,4 @@
-DESCRITION:
+DESCRIPTION:
 
 pasty is a command line utility written in Haskell for pasting column 
 centric ASCII files. In its most basic mode, pasty is similar to 
