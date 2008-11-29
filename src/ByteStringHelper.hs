@@ -22,7 +22,9 @@
   ByteStringHelper provides utility functions to deal with
   ByteStrings
 -}
-module ByteStringHelper ( equilize,
+module ByteStringHelper ( ColumnSpec,
+                          ColumnList,
+                          equilize,
                           newLineW,
                           remove_last_newline,
                           space,
@@ -30,18 +32,23 @@ module ByteStringHelper ( equilize,
                           split_into_lines
                         ) where
 
+
+
 -- imports
-import Data.Char
 import qualified Data.ByteString as B
 import qualified Data.ByteString.Char8 as BC
+import Data.Char
 import Data.Word
 --import Debug.Trace
+
+
 
 {-|
   convert char into Word8
 -}
 char_to_Word8 :: Char -> Word8
 char_to_Word8 = fromIntegral . ord
+
 
 
 {-|
@@ -54,6 +61,7 @@ spaceW :: Word8
 spaceW = char_to_Word8 ' '
 
 
+
 {-|
   a few useful ByteStrings
 -}
@@ -62,6 +70,7 @@ newLine = BC.pack "\n"
 
 space :: B.ByteString
 space = BC.pack " "
+
 
 
 {-|
@@ -75,6 +84,7 @@ remove_last_newline string
   | otherwise                  = string
 
 
+
 {-|
   split a list of ByteStrings into its constituent lines, 
   i.e., bytes separated by a newline '\n'
@@ -83,12 +93,14 @@ split_into_lines :: [B.ByteString] -> [[B.ByteString]]
 split_into_lines = map (B.split newLineW) . equilize 
 
 
+
 {-|
   split a single ByteString into its constituent items, i.e., bytes
   separated by any number of spaceChars
 -}
 split_into_items :: B.ByteString -> [B.ByteString]
-split_into_items = B.split spaceW 
+split_into_items = filter ( /= B.empty ) . B.split spaceW
+
 
 
 {-| 
@@ -114,6 +126,7 @@ equilize items = pad_items [] maxLength items
       pad_items (B.append x (add_newlines p x):acc) p xs
 
 
+
 {-|
   return a number n of newlines such that the current number
   in the ByteString plus n equals the target
@@ -128,6 +141,7 @@ add_newlines target x  =
     newlines difference
 
 
+
 {-|
   returns a ByteString constisting of n newlines
 -}
@@ -140,11 +154,20 @@ newlines num = cat_newlines [] num
     cat_newlines acc x = cat_newlines (newLine:acc) (x-1)
 
 
+
 {-|
   counts the number of newlines in a ByteString
 -}
 count_newlines :: B.ByteString -> Int
 count_newlines = length . B.findIndices ( == newLineW )
 
+
+
+{-| 
+  define a few helper types used purely for better code
+  readability
+-}
+type ColumnSpec  = [Int]
+type ColumnList  = [ColumnSpec]
 
 
