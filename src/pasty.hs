@@ -208,6 +208,3 @@ try_read_file path = do
           | isPermissionError err   = "Permission denied."
           | isDoesNotExistError err = "File does not exist."
           | otherwise               = "Unknown problem :("
-
-
-

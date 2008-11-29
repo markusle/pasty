@@ -1,0 +1,84 @@
+.TH "pasty" "1" "Nov 2008" "pasty-0.1" "pasty"
+.SH "NAME"
+pasty \- A simple command line pasting utility
+.SH "SYNOPSIS"
+.B pasty
+.I [column specifiers] file1 file2 ...
+.PP
+
+.SH "DESCRIPTION"
+pasty is a simple commandline tool for pasting specific columns 
+from an arbitrary number of column centric ASCII input files into 
+a single output file. pasty currently expects the columns in the
+input files to be separated by spaces (one or more).
+
+.SH "OPTIONS"
+pasty currently only supports a single optional specifier, indicating
+what columns to extract from each of the input files. Without the
+specifier, pasty will paste complete rows for each file and the
+output is then identical to coreutil's paste command.
+
+.TP 4m
+.PD 0
+\fI-c COLUMN_SPEC
+.TP
+.PD
+\fI--colspecs COLUMN_SPEC\fR
+
+
+Extract the columns specified in COLUMN_SPEC for each file provided
+on the command line. COLUMN_SPEC is a colon separated list of 
+FILE_SPECs. FILE_SPEC is a comma separated list of zero based column
+indices to be extracted for each input file and pasted into the output
+file. Column indices larger than the number of columns are ignored and
+the number of FILE_SPEC elements can be smaller than the total number 
+of input files. In this case, the last FILE_SPEC provided is used for 
+all remaining files. Without COLUMN_SPEC, all columns are pasted
+for each input file.
+
+
+.SH "EXAMPLES"
+
+.nf
+.B pasty file1 files
+.fi
+Paste all columns of file1 and file2 into the output file.
+.PP
+.nf
+.B pasty -c 1,2:3 file1 file2
+.fi
+Paste columns 1,2 (zero based!) of file1 and column 3 of file2 into
+the output file.
+.PP
+.nf
+.B pasty -c 1,2:3 file1 file2 file3 file4
+.fi
+Paste columns 1,2 (zero based!) of file1 and column 3 of file2, file3
+and file4 into the output file.
+.PP
+.nf
+.B pasty -c 0 file1 file2 file3 file4
+.fi
+Paste the zeroth columns of file1, file2, file3, and file4 into the
+output file.
+.PP
+
+
+.SH "REPORTING BUGS"
+
+Please report bugs to <markusle@gmail.com>
+
+
+.SH "COPYRIGHT AND LICENSE"
+
+pasty is released under the GPL version 3.
+There is NO warranty; not even for MERCHANTABILITY or FITNESS
+FOR A PARTICULAR PURPOSE.
+
+(C) 2008 Markus Dittrich
+
+
+.SH "AUTHOR"
+.nf
+Markus Dittrich <markusle@gmail.com>
+.fi
