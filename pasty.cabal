@@ -1,0 +1,21 @@
+Name:          pasty
+Version:       0.0
+License:       GPL
+license-file:  COPYING
+copyright:     (c) 2008 Markus Dittrich
+category:      console
+Synopsis:      A simple command line pasting utility
+Description:   A simple command line utility for pasting column 
+               centric data from an arbitrary number of files into 
+               a target file.
+Author:        Markus Dittrich <markus.lists@gmail.com>
+Maintainer:    Markus Dittrich <markus.lists@gmail.com>
+stability:     alpha
+build-type:    Simple
+cabal-version: >= 1.2.1
+
+Executable pasty
+  Build-Depends:  base, bytestring >= 0.9.0.1
+  ghc-options:    -O2
+  Main-Is:        pasty.hs
+  hs-source-dirs: src

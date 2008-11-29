@@ -31,10 +31,10 @@ module ByteStringHelper ( equilize,
                         ) where
 
 -- imports
-import Char
+import Data.Char
 import qualified Data.ByteString as B
 import qualified Data.ByteString.Char8 as BC
-import Word
+import Data.Word
 --import Debug.Trace
 
 {-|
