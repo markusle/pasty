@@ -1,13 +1,11 @@
 DESCRIPTION:
 
-pasty is a command line utility written in Haskell for pasting column 
-centric ASCII files. In its most basic mode, pasty is similar to 
-the paste command that is part of coreutils. However, in contrast
-to paste, pasty can pick any collection of (per file) columns from
-an arbitrary (depending on your system limits, of course) number
-of files and assemble them into a "pasted" final file.
+pasty is a command line utility written in Haskell for pasting from 
+column centric plain text files. In its most basic mode, pasty 
+is similar to the paste command which is part of coreutils. However, 
+in contrast to paste, pasty can select an arbitrary collection of
+columns from a list of files and paste them into an output file. 
 
-Please consult the pasty man page for details.
-
+Please consult the pasty man page for more details.
 
 (C) 2008 Markus Dittrich

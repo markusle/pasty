@@ -1,7 +1,6 @@
 # Copyright 2008 Markus Dittrich <markusle@gmail.com>
 # Distributed under the terms of the GNU General Public License v3
 
-
 VERSION=0.1
 DESTDIR=
 mandir=$(DESTDIR)/usr/share/man/man1
@@ -28,7 +27,7 @@ install:
 	install -d $(mandir)
 	install -d $(bindir)
 	install -m 0755 src/pasty $(bindir)/
-	install -m 0644 AUTHORS $(docdir)/
+	install -m 0644 COPYING AUTHORS $(docdir)/
 	install -m 0644 man/pasty.1 $(mandir)/
 
 
