@@ -21,6 +21,8 @@ pasty: $(OBJECTS)
 debug: $(OBJECTS)
 	ghc -i./src $(GHC_FLAGS_DEVEL) --make src/pasty.hs
 
+test: pasty
+	make -C test/
 
 install:
 	install -d $(docdir)
