@@ -22,16 +22,15 @@
   CommandLineParser provides all tools needed to parse the
   command line
 -}
-module CommandLineParser ( parse_args,
-                           print_usage
+module CommandLineParser ( parse_args
+                         , print_usage
                          ) where
 
 -- imports
 import Data.List
 
-
 -- local imports
-import ByteStringHelper
+import Parser
 
 
 
@@ -43,7 +42,7 @@ import ByteStringHelper
   force a print_usage; otherwise we'll try to read the item as a 
   file which will of course fail.
 -}
-parse_args :: [String] -> Maybe (ColumnList,[String])
+parse_args :: [String] -> Maybe ([ColumnSpec],[String])
 parse_args []  =  Nothing
 parse_args a@(x:y:xs) 
   | (x == "-c") || (x == "--colspecs") = 
@@ -58,7 +57,7 @@ parse_args s        = Just ([],s)
   parses the user specified list of columns to be extracted for
   each file
 -}
-parse_column_specs :: String -> [String] -> ColumnList
+parse_column_specs :: String -> [String] -> [ColumnSpec]
 parse_column_specs colSpec files = 
   
   let
@@ -95,9 +94,9 @@ parse_column_specs colSpec files =
         parse_column (read next:acc) rest
 
 
-    {- pad (or trims) the ColumnList to make sure we have the
+    {- pad (or trims) [ColumnSpec] to make sure we have the
        same number of elements than we have files -}
-    pad_column_list :: ColumnList -> Int -> ColumnList
+    pad_column_list :: [ColumnSpec] -> Int -> [ColumnSpec]
     pad_column_list [] _ = []
     pad_column_list xs numFiles 
       | length xs >= numFiles   = take numFiles xs

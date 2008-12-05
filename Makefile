@@ -11,8 +11,10 @@ bindir=$(DESTDIR)/usr/bin
 GHC_FLAGS_DEVEL = -O -fwarn-incomplete-patterns -fwarn-incomplete-record-updates -fwarn-missing-fields -fwarn-missing-methods -fwarn-missing-signatures -fwarn-name-shadowing -fwarn-orphans -fwarn-overlapping-patterns -fwarn-simple-patterns -fwarn-tabs -fwarn-type-defaults -fwarn-monomorphism-restriction -fwarn-unused-binds -fwarn-unused-imports -fwarn-unused-matches
 GHC_FLAGS_RELEASE = -O2
 
-OBJECTS = src/pasty.hs src/ByteStringHelper.hs src/CommandLineParser.hs
+OBJECTS = src/pasty.hs src/ByteStringHelper.hs \
+	  src/CommandLineParser.hs src/Parser.hs src/IO.hs
 
+all: debug
 
 pasty: $(OBJECTS)
 	ghc -i./src $(GHC_FLAGS_RELEASE) --make src/pasty.hs

@@ -22,14 +22,11 @@
   ByteStringHelper provides utility functions to deal with
   ByteStrings
 -}
-module ByteStringHelper ( ColumnSpec,
-                          ColumnList,
-                          equilize,
-                          newLineW,
-                          remove_last_newline,
-                          space,
-                          split_into_items,
-                          split_into_lines
+module ByteStringHelper ( cat_columns
+                        , newLineW
+                        , space
+                        , split_into_items
+                        , split_into_lines
                         ) where
 
 
@@ -50,7 +47,6 @@ char_to_Word8 :: Char -> Word8
 char_to_Word8 = fromIntegral . ord
 
 
-
 {-|
   a few useful Word8s
 -}
@@ -65,9 +61,6 @@ spaceW = char_to_Word8 ' '
 {-|
   a few useful ByteStrings
 -}
-newLine :: B.ByteString
-newLine = BC.pack "\n"
-
 space :: B.ByteString
 space = BC.pack " "
 
@@ -90,7 +83,7 @@ remove_last_newline string
   i.e., bytes separated by a newline '\n'
 -}
 split_into_lines :: [B.ByteString] -> [[B.ByteString]]
-split_into_lines = map (B.split newLineW) . equilize 
+split_into_lines = map (B.split newLineW . remove_last_newline) 
 
 
 
@@ -102,72 +95,15 @@ split_into_items :: B.ByteString -> [B.ByteString]
 split_into_items = filter ( /= B.empty ) . B.split spaceW
 
 
-
-{-| 
-  equilize acts on a list of ByteStrings: It finds the one(s)
-  with the most newlines and pads all the other ones with
-  newlines so that in the end all have the same length
--}
-equilize :: [B.ByteString] -> [B.ByteString]
-equilize []    = []
-equilize items = pad_items [] maxLength items
-
-  where
-    maxLength = find_longest items
-    
-    find_longest :: [B.ByteString] -> Int
-    find_longest = maximum . map count_newlines
-
-    pad_items :: [B.ByteString] -> Int -> [B.ByteString] 
-              -> [B.ByteString]
-    pad_items acc _ []     = reverse acc
-    pad_items _   0 xs     = xs
-    pad_items acc p (x:xs) = 
-      pad_items (B.append x (add_newlines p x):acc) p xs
-
-
-
 {-|
-  return a number n of newlines such that the current number
-  in the ByteString plus n equals the target
+  concatenate two column entries consisting of ByteStrings
+  and an intervening space (unless the "left" item is an empty
+  bytestring) to give a new row;
 -}
-add_newlines :: Int -> B.ByteString -> B.ByteString
-add_newlines 0 _       = B.empty
-add_newlines target x  = 
-  let
-    currentNum = count_newlines x
-    difference = target - currentNum
-  in
-    newlines difference
+cat_columns :: B.ByteString -> B.ByteString -> B.ByteString
+cat_columns left right 
+  | left == B.empty  = right
+  | otherwise        = B.append left $ B.append space right
 
-
-
-{-|
-  returns a ByteString constisting of n newlines
--}
-newlines :: Int -> B.ByteString
-newlines num = cat_newlines [] num
-
-  where
-    cat_newlines :: [B.ByteString] -> Int -> B.ByteString
-    cat_newlines acc 0 = B.concat acc
-    cat_newlines acc x = cat_newlines (newLine:acc) (x-1)
-
-
-
-{-|
-  counts the number of newlines in a ByteString
--}
-count_newlines :: B.ByteString -> Int
-count_newlines = length . B.findIndices ( == newLineW )
-
-
-
-{-| 
-  define a few helper types used purely for better code
-  readability
--}
-type ColumnSpec  = [Int]
-type ColumnList  = [ColumnSpec]
 
 
