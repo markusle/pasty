@@ -37,6 +37,21 @@ all remaining files. Without COLUMN_SPEC, all columns are pasted
 for each input file.
 
 
+.TP 4m
+.PD 0
+\fI-u SEPARATOR
+.TP
+.PD
+\fI--outsep SEPARATOR
+
+
+Change the separator string between the columns in the output from 
+the default single space to the string given in SEPARATOR STRING.
+NOTE: In order to avoid that the shell interprets certain characters,
+the string might need to be quoted.Quoting is also necessary when
+SEPARATOR consists of or contains whitespace characters.
+
+
 .SH "EXAMPLES"
 
 .nf
@@ -62,6 +77,13 @@ and file4 into the output file.
 Paste the zeroth columns of file1, file2, file3, and file4 into the
 output file.
 .PP
+.nf
+.B pasty -c 0 -c "::" file1 file2 file3 file4
+.fi
+Paste the zeroth columns of file1, file2, file3, and file4 into the
+output file and separate the columns by a double colon.
+.PP
+
 
 
 .SH "REPORTING BUGS"

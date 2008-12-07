@@ -34,11 +34,11 @@ module Parser ( ColumnSpec
 import qualified Data.ByteString as B
 import qualified Data.ByteString.Char8 as BC
 import Data.List
---import Debug.Trace
 
 -- local imports
 import ByteStringHelper
 import IO
+import PastyData
 
 
 {-| 
@@ -46,32 +46,32 @@ import IO
 -}
 type FileContents = B.ByteString
 type Column       = [B.ByteString]
-type ColumnSpec  = [Int]
 
 
 {-|
   concatenate a collection of columns row wise and return 
   the resulting concatenated column
 -}
-paste :: [Column] -> Column
-paste []   = []
-paste cols = paste_column [] cols 
+paste :: B.ByteString -> [Column] -> Column
+paste _ []           = []
+paste separator cols = paste_column [] separator cols 
 
   where
-    {- past columns -}
-    paste_column :: Column -> [Column] -> Column
-    paste_column acc []     = acc
-    paste_column acc (x:xs) = paste_column (walk_column [] acc x) xs
+    -- past columns
+    paste_column :: Column -> B.ByteString -> [Column] -> Column
+    paste_column acc _ []       = acc
+    paste_column acc sep (x:xs) = 
+      paste_column (walk_column [] acc sep x) sep xs
 
-    {- walk down a column and append content to accumulator row-wise 
-       FIXME: The call to revers after each column walk sucks and is
-              inefficient; is there a way to get rid of it??       -}
-    walk_column :: Column -> Column -> Column -> Column
-    walk_column acc [] [] = reverse acc
-    walk_column acc [] (r:rs) = walk_column (r:acc) [] rs
-    walk_column acc (l:ls) [] = walk_column (l:acc) ls []
-    walk_column acc (l:ls) (r:rs) =
-      walk_column (cat_columns l r:acc) ls rs
+    -- walk down a column and append content to accumulator row-wise 
+    -- FIXME: The call to revers after each column walk sucks and is
+    --        inefficient; is there a way to get rid of it??       -}
+    walk_column :: Column -> Column -> B.ByteString -> Column -> Column
+    walk_column acc [] _ [] = reverse acc
+    walk_column acc [] s (r:rs) = walk_column (r:acc) [] s rs
+    walk_column acc (l:ls) s [] = walk_column (l:acc) ls s []
+    walk_column acc (l:ls) s (r:rs) =
+      walk_column (cat_columns s l r:acc) ls s rs
 
 
 
@@ -104,7 +104,7 @@ grab_file_columns colSpec col = scan_row [] colSpecGood colItems
   where 
     colItems = map split_into_items col
 
-    {- filter all colSpecs that index outside the line length -}
+    -- filter all colSpecs that index outside the line length
     minLength = minimum $ map length colItems
     colSpecGood = filter ( < minLength ) $ reverse colSpec
 

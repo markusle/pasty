@@ -36,8 +36,6 @@ import qualified Data.ByteString as B
 import qualified Data.ByteString.Char8 as BC
 import Data.Char
 import Data.Word
---import Debug.Trace
-
 
 
 {-|
@@ -63,7 +61,6 @@ spaceW = char_to_Word8 ' '
 -}
 space :: B.ByteString
 space = BC.pack " "
-
 
 
 {-|
@@ -97,13 +94,14 @@ split_into_items = filter ( /= B.empty ) . B.split spaceW
 
 {-|
   concatenate two column entries consisting of ByteStrings
-  and an intervening space (unless the "left" item is an empty
+  and an intervening ByteString (unless the "left" item is an empty
   bytestring) to give a new row;
 -}
-cat_columns :: B.ByteString -> B.ByteString -> B.ByteString
-cat_columns left right 
+cat_columns :: B.ByteString -> B.ByteString -> B.ByteString 
+               -> B.ByteString
+cat_columns sep left right 
   | left == B.empty  = right
-  | otherwise        = B.append left $ B.append space right
+  | otherwise        = B.append left $ B.append sep right
 
 
 

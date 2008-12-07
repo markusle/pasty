@@ -12,7 +12,8 @@ GHC_FLAGS_DEVEL = -O -fwarn-incomplete-patterns -fwarn-incomplete-record-updates
 GHC_FLAGS_RELEASE = -O2
 
 OBJECTS = src/pasty.hs src/ByteStringHelper.hs \
-	  src/CommandLineParser.hs src/Parser.hs src/IO.hs
+	  src/CommandLineParser.hs src/Parser.hs src/IO.hs \
+          src/PastyData.hs
 
 all: debug
 

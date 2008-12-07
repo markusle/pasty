@@ -19,32 +19,40 @@
 --------------------------------------------------------------------}
 
 {-|
-  this file contains the main driver routines for pasty 
+  common data structures used by many pasty modules
+  command line
 -}
-
+module PastyData ( OutputSpec(..)
+                 , defaultOutputSpec
+                 , ColumnSpec
+                 ) where
 
 -- imports
-import qualified Data.ByteString as B
-import System.Environment
+import qualified Data.ByteString as B 
+import qualified Data.ByteString.Char8 as BC
 
--- local imports
-import CommandLineParser
-import Parser
-import PastyData
 
 
 {-|
-  main driver
+  notational type definitions
 -}
-main :: IO ()
-main = 
- 
-  do
-    commandLine <- getArgs
-    let parsedCommands = parse_args commandLine
-    case parsedCommands of
-      Nothing -> print_usage 
-      Just (specs,files) -> do
-          contents <- read_files [] files
-          let columns = extract_columns (columnSpec specs) contents
-          mapM_ B.putStrLn $ paste (outputSep specs) columns
+type ColumnSpec  = [Int]
+
+
+
+{-|
+  data structure for keeping track of the parsed command line info
+-}
+data OutputSpec = OutPutSpec {
+  columnSpec :: [ColumnSpec],
+  outputSep  :: B.ByteString
+}
+
+defaultOutputSpec :: OutputSpec
+defaultOutputSpec = OutPutSpec {
+  columnSpec = [],
+  outputSep  = B.empty
+}
+
+
+
