@@ -34,6 +34,7 @@ module Parser ( ColumnSpec
 import qualified Data.ByteString as B
 import qualified Data.ByteString.Char8 as BC
 import Data.List
+import Data.Word
 
 -- local imports
 import ByteStringHelper
@@ -79,10 +80,10 @@ paste separator cols = paste_column [] separator cols
   extract the columns corresponding to the ColSpecs for all
   files
 -}
-extract_columns :: [ColumnSpec] -> [FileContents] -> [Column]
-extract_columns _ []       = []
-extract_columns [] xs      = split_into_lines xs
-extract_columns colList xs = 
+extract_columns :: Word8 -> [ColumnSpec] -> [FileContents] -> [Column]
+extract_columns _ _ []             = []
+extract_columns _ [] xs            = split_into_lines xs
+extract_columns itemSep colList xs = 
     grab_all_columns [] colList $ split_into_lines xs 
 
   where
@@ -90,7 +91,7 @@ extract_columns colList xs =
   grab_all_columns acc [] _  = acc
   grab_all_columns acc _ []  = acc
   grab_all_columns acc (c:cs) (y:ys) = 
-    grab_all_columns (acc ++ grab_file_columns c y) cs ys
+    grab_all_columns (acc ++ grab_file_columns itemSep c y) cs ys
 
 
 
@@ -98,11 +99,12 @@ extract_columns colList xs =
   extract the specified columns from the content of a particular
   file
 -}
-grab_file_columns :: ColumnSpec -> Column -> [Column]
-grab_file_columns colSpec col = scan_row [] colSpecGood colItems
+grab_file_columns :: Word8 -> ColumnSpec -> Column -> [Column]
+grab_file_columns itemSep colSpec col = scan_row [] colSpecGood 
+                                          colItems
 
   where 
-    colItems = map split_into_items col
+    colItems = map (\x -> split_into_items itemSep x) col
 
     -- filter all colSpecs that index outside the line length
     minLength = minimum $ map length colItems

@@ -94,8 +94,30 @@ rm -f "${tmpfile}"
 printf "test 10 ...."
 tmpfile="${mktmp}"
 ${pasty} -c 0,1 test_file1.dat test_file2.dat test_file1.dat -u "++++" > "${tmpfile}"
-test_result "test.9.ref" "${tmpfile}" 
+test_result "test.10.ref" "${tmpfile}" 
 rm -f "${tmpfile}"
+
+# test 11 
+printf "test 11 ...."
+tmpfile="${mktmp}"
+${pasty} -c 1 -i : test_file3.dat > "${tmpfile}"
+test_result "test.11.ref" "${tmpfile}" 
+rm -f "${tmpfile}"
+
+# test 12 
+printf "test 12 ...."
+tmpfile="${mktmp}"
+${pasty} -c 0,1 -i : test_file3.dat > "${tmpfile}"
+test_result "test.12.ref" "${tmpfile}" 
+rm -f "${tmpfile}"
+
+# test 13 
+printf "test 13 ...."
+tmpfile="${mktmp}"
+${pasty} -c 1 -i ":" test_file3.dat test_file4.dat > "${tmpfile}"
+test_result "test.13.ref" "${tmpfile}" 
+rm -f "${tmpfile}"
+
 
 
 # at this point all tests passed

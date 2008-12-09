@@ -30,7 +30,8 @@ module CommandLineParser ( parse_args
 import qualified Data.ByteString as B 
 import qualified Data.ByteString.Char8 as BC
 import Data.List
-import Debug.Trace
+import Data.Word
+--import Debug.Trace
 
 -- local imports
 import ByteStringHelper
@@ -52,8 +53,10 @@ parse_args args =
   let
     (colspecs,rest)   =  check_option parse_column_specs [] 
                             "-c" "--colspecs" args
-    (separator,files) =  check_option BC.pack space 
+    (outSep,rest1)    =  check_option BC.pack space 
                             "-u" "--outsep" rest
+    (inSep,files)     =  check_option extract_word8 spaceW
+                            "-i" "--insep" rest1
     colspecsPadded    = pad_column_list colspecs $ length files
   in
     -- check if list of files contains items starting with a dash
@@ -63,8 +66,9 @@ parse_args args =
         Nothing
       else
         Just ( defaultOutputSpec { 
-                columnSpec = colspecsPadded, 
-                outputSep = separator }
+                  columnSpec = colspecsPadded
+                , inputSep   = inSep
+                , outputSep  = outSep }
               , files)
 
 
@@ -97,6 +101,14 @@ parse_args args =
       | otherwise             = check_for_invalid_opts xs
 
 
+    -- extract a Word8 from a String passed on the command line
+    -- if the string has more than a single char we simple pick
+    -- the first one for now; if the string is empty we take the
+    -- default
+    extract_word8 :: String -> Word8
+    extract_word8 item 
+      | length item == 0    = spaceW
+      | otherwise           = char_to_Word8 $ head item
 
 {-|
   parses the user specified list of columns to be extracted for
@@ -173,7 +185,9 @@ print_usage = do
   putStrLn "Usage: pasty <options> file1 file2\n"
   putStrLn "Options:"
   putStrLn "\t-c, --colspecs <columnspecs>"
-  putStrLn "\t-u, --outsep   char separating output columns"
-  putStrLn "\t               (default is a single space)"
+  putStrLn "\t-u, --outsep   string separating output columns"
+  putStrLn "\t               (default: space)"
+  putStrLn "\t-i, --insep    char used for separating input" 
+  putStrLn "\t               columns (default: space)"
   putStrLn ""
 

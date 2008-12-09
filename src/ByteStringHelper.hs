@@ -23,8 +23,10 @@
   ByteStrings
 -}
 module ByteStringHelper ( cat_columns
+                        , char_to_Word8
                         , newLineW
                         , space
+                        , spaceW
                         , split_into_items
                         , split_into_lines
                         ) where
@@ -88,8 +90,8 @@ split_into_lines = map (B.split newLineW . remove_last_newline)
   split a single ByteString into its constituent items, i.e., bytes
   separated by any number of spaceChars
 -}
-split_into_items :: B.ByteString -> [B.ByteString]
-split_into_items = filter ( /= B.empty ) . B.split spaceW
+split_into_items :: Word8 -> B.ByteString -> [B.ByteString]
+split_into_items inSep = filter ( /= B.empty ) . B.split inSep
 
 
 {-|

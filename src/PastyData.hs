@@ -30,6 +30,11 @@ module PastyData ( OutputSpec(..)
 -- imports
 import qualified Data.ByteString as B 
 import qualified Data.ByteString.Char8 as BC
+import Data.Word
+
+
+-- local imports
+import ByteStringHelper
 
 
 
@@ -44,14 +49,16 @@ type ColumnSpec  = [Int]
   data structure for keeping track of the parsed command line info
 -}
 data OutputSpec = OutPutSpec {
-  columnSpec :: [ColumnSpec],
-  outputSep  :: B.ByteString
+    columnSpec :: [ColumnSpec]
+  , inputSep   :: Word8
+  , outputSep  :: B.ByteString
 }
 
 defaultOutputSpec :: OutputSpec
 defaultOutputSpec = OutPutSpec {
-  columnSpec = [],
-  outputSep  = B.empty
+    columnSpec = []
+  , inputSep   = spaceW
+  , outputSep  = space
 }
 
 
