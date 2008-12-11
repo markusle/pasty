@@ -80,13 +80,18 @@ paste separator cols = paste_column [] separator cols
   extract the columns corresponding to the ColSpecs for all
   files
 -}
-extract_columns :: Word8 -> [ColumnSpec] -> [FileContents] -> [Column]
-extract_columns _ _ []             = []
-extract_columns _ [] xs            = split_into_lines xs
-extract_columns itemSep colList xs = 
-    grab_all_columns [] colList $ split_into_lines xs 
-
+extract_columns :: OutputSpec -> [FileContents] -> [Column]
+extract_columns _ []            = []
+extract_columns spec xs 
+  | colList == []               = split_into_lines xs
+  | otherwise                   = grab_all_columns [] colList $ 
+                                    split_into_lines xs 
   where
+  -- extract relevant command lin options
+  itemSep = inputSep spec
+  colList = columnSpec spec
+
+  -- grab all selected columns from the input files
   grab_all_columns :: [Column] -> [ColumnSpec] -> [Column] -> [Column]
   grab_all_columns acc [] _  = acc
   grab_all_columns acc _ []  = acc

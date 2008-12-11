@@ -48,14 +48,14 @@ type ColumnSpec  = [Int]
 {-|
   data structure for keeping track of the parsed command line info
 -}
-data OutputSpec = OutPutSpec {
+data OutputSpec = OutputSpec {
     columnSpec :: [ColumnSpec]
   , inputSep   :: Word8
   , outputSep  :: B.ByteString
 }
 
 defaultOutputSpec :: OutputSpec
-defaultOutputSpec = OutPutSpec {
+defaultOutputSpec = OutputSpec {
     columnSpec = []
   , inputSep   = spaceW
   , outputSep  = space

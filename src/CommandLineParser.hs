@@ -51,11 +51,11 @@ parse_args []   = Nothing
 parse_args args = 
 
   let
-    (colspecs,rest)   =  check_option parse_column_specs [] 
+    (colspecs,rest)   =  check_option_arg parse_column_specs [] 
                             "-c" "--colspecs" args
-    (outSep,rest1)    =  check_option BC.pack space 
+    (outSep,rest1)    =  check_option_arg BC.pack space 
                             "-u" "--outsep" rest
-    (inSep,files)     =  check_option extract_word8 spaceW
+    (inSep, files)     =  check_option_arg extract_word8 spaceW
                             "-i" "--insep" rest1
     colspecsPadded    = pad_column_list colspecs $ length files
   in
@@ -68,28 +68,43 @@ parse_args args =
         Just ( defaultOutputSpec { 
                   columnSpec = colspecsPadded
                 , inputSep   = inSep
-                , outputSep  = outSep }
+                , outputSep  = outSep 
+                }
               , files)
 
 
   where
-    -- generic parse function to search for the given command
-    -- line options 
-    check_option :: (String -> a) -> a -> String -> String 
-                    -> [String] -> (a,[String])
-    check_option = check []
+    -- generic parse function for option without optstring
+    check_option :: String -> String -> [String] -> (Bool,[String])
+    check_option = check_option_h []
 
       where
-        check :: [String] -> (String -> a) -> a -> String -> String 
-                 -> [String] -> (a,[String])
-        check acc _ def _ _ [] = (def, reverse acc)
+        check_option_h :: [String] -> String -> String -> [String] 
+                          -> (Bool,[String])
+        check_option_h acc _ _ [] = (False, reverse acc)
+        check_option_h acc shortOp longOp (x:xs)
+          | (x == shortOp) || (x == longOp) = (True, reverse acc ++ xs)
+          | otherwise                       = check_option_h (x:acc) 
+                                                shortOp longOp xs
 
-        check acc f def shortOp longOp (x:y:zs)    
-          | (x == shortOp) || (x == longOp ) = (f y, reverse acc ++ zs)
-          | otherwise = check (x:acc) f def shortOp longOp $ y:zs
 
-        check acc f def shortOp longOp (x:xs) =
-              check (x:acc) f def shortOp longOp xs
+    -- generic parse function for option with mandatory optstring
+    check_option_arg :: (String -> a) -> a -> String -> String 
+                    -> [String] -> (a,[String])
+    check_option_arg = check_option_arg_h []
+
+      where
+        check_option_arg_h :: [String] -> (String -> a) -> a -> String 
+                              -> String -> [String] -> (a,[String])
+        check_option_arg_h acc _ def _ _ []     = (def, reverse acc)
+
+        check_option_arg_h acc f def shortOp longOp (x:y:zs)    
+          | (x == shortOp) || (x == longOp )  = (f y, reverse acc ++ zs)
+          | otherwise                         = check_option_arg_h (x:acc) 
+                                                  f def shortOp longOp $ y:zs
+
+        check_option_arg_h acc f def shortOp longOp (x:xs) = 
+              check_option_arg_h (x:acc) f def shortOp longOp xs
 
 
     -- check final list of files for any potentially invalid
@@ -187,7 +202,7 @@ print_usage = do
   putStrLn "\t-c, --colspecs <columnspecs>"
   putStrLn "\t-u, --outsep   string separating output columns"
   putStrLn "\t               (default: space)"
-  putStrLn "\t-i, --insep    char used for separating input" 
-  putStrLn "\t               columns (default: space)"
+  putStrLn "\t-i, --insep    char used for parsing input" 
+  putStrLn "\t               columns greedily (default: space)"
   putStrLn ""
 

@@ -38,7 +38,7 @@ import qualified Data.ByteString as B
 import qualified Data.ByteString.Char8 as BC
 import Data.Char
 import Data.Word
-
+import Debug.Trace
 
 {-|
   convert char into Word8
@@ -88,10 +88,11 @@ split_into_lines = map (B.split newLineW . remove_last_newline)
 
 {-|
   split a single ByteString into its constituent items, i.e., bytes
-  separated by any number of spaceChars
+  separated by any number of spaceChars.
 -}
 split_into_items :: Word8 -> B.ByteString -> [B.ByteString]
-split_into_items inSep = filter ( /= B.empty ) . B.split inSep
+split_into_items inSep = filter ( /= B.empty ) . B.split inSep 
+
 
 
 {-|

@@ -46,6 +46,5 @@ main =
       Nothing -> print_usage 
       Just (specs,files) -> do
           contents <- read_files [] files
-          let columns = extract_columns (inputSep specs) 
-                          (columnSpec specs) contents
+          let columns = extract_columns specs contents
           mapM_ B.putStrLn $ paste (outputSep specs) columns
