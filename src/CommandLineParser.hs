@@ -51,13 +51,15 @@ parse_args []   = Nothing
 parse_args args = 
 
   let
-    (colspecs,rest)   =  check_option_arg parse_column_specs [] 
+    (colSpecs,rem1)     = check_option_arg parse_column_specs [] 
                             "-c" "--colspecs" args
-    (outSep,rest1)    =  check_option_arg BC.pack space 
-                            "-u" "--outsep" rest
-    (inSep, files)     =  check_option_arg extract_word8 spaceW
-                            "-i" "--insep" rest1
-    colspecsPadded    = pad_column_list colspecs $ length files
+    (outSep,rem2)       = check_option_arg BC.pack space 
+                            "-u" "--outsep" rem1
+    (inSep, rem3)       = check_option_arg extract_word8 spaceW
+                            "-i" "--insep" rem2
+    (pasteSpecs, files) = check_option_arg parse_paste_specs []
+                            "-p" "--pastespecs" rem3
+    colSpecsPadded      = pad_column_list colSpecs $ length files
   in
     -- check if list of files contains items starting with a dash
     -- which most likely indicated an invalid command line option
@@ -65,12 +67,12 @@ parse_args args =
       then
         Nothing
       else
-        Just ( defaultOutputSpec { 
-                  columnSpec = colspecsPadded
-                , inputSep   = inSep
-                , outputSep  = outSep 
-                }
-              , files)
+        Just ( defaultOutputSpec { parseSpec = colSpecsPadded
+                                 , pasteSpec = pasteSpecs
+                                 , inputSep   = inSep
+                                 , outputSep  = outSep 
+                                 }
+             , files)
 
 
   where
@@ -84,8 +86,7 @@ parse_args args =
         check_option_h acc _ _ [] = (False, reverse acc)
         check_option_h acc shortOp longOp (x:xs)
           | (x == shortOp) || (x == longOp) = (True, reverse acc ++ xs)
-          | otherwise                       = check_option_h (x:acc) 
-                                                shortOp longOp xs
+          | otherwise = check_option_h (x:acc) shortOp longOp xs
 
 
     -- generic parse function for option with mandatory optstring
@@ -97,11 +98,11 @@ parse_args args =
         check_option_arg_h :: [String] -> (String -> a) -> a -> String 
                               -> String -> [String] -> (a,[String])
         check_option_arg_h acc _ def _ _ []     = (def, reverse acc)
-
         check_option_arg_h acc f def shortOp longOp (x:y:zs)    
-          | (x == shortOp) || (x == longOp )  = (f y, reverse acc ++ zs)
-          | otherwise                         = check_option_arg_h (x:acc) 
-                                                  f def shortOp longOp $ y:zs
+          | (x == shortOp) || (x == longOp )  = 
+                (f y, reverse acc ++ zs)
+          | otherwise = check_option_arg_h (x:acc) f def shortOp 
+                          longOp $ y:zs
 
         check_option_arg_h acc f def shortOp longOp (x:xs) = 
               check_option_arg_h (x:acc) f def shortOp longOp xs
@@ -125,6 +126,17 @@ parse_args args =
       | length item == 0    = spaceW
       | otherwise           = char_to_Word8 $ head item
 
+
+
+{-|
+  parses the user specified list providing the order in with
+  the parsed columns are to be punched
+-}
+parse_paste_specs :: String -> ColumnSpec
+parse_paste_specs = parse_column []
+
+
+
 {-|
   parses the user specified list of columns to be extracted for
   each file
@@ -135,7 +147,7 @@ parse_column_specs colSpec =
   let
     perFile = parse_per_file_columns [] colSpec
   in
-    map (parse_column []) perFile
+    map (sort . parse_column []) perFile
 
   where
 
@@ -153,16 +165,18 @@ parse_column_specs colSpec =
         parse_per_file_columns (next:acc) rest
 
 
-    -- parse individual file items separated by , 
-    parse_column :: ColumnSpec -> String -> ColumnSpec
-    parse_column acc []  = sort acc
-    parse_column acc fileItems =
+{-|
+  parse list of ints separated by , 
+-}
+parse_column :: ColumnSpec -> String -> ColumnSpec
+parse_column acc []  = acc
+parse_column acc fileItems =
 
-      let
-        (next,raw_rest) = break ( == ',' ) fileItems
-        rest = strip_leading_char ',' raw_rest
-      in
-        parse_column (read next:acc) rest
+   let
+     (next,raw_rest) = break ( == ',' ) fileItems
+     rest = strip_leading_char ',' raw_rest
+   in
+     parse_column (read next:acc) rest
 
 
 {-|
@@ -196,13 +210,14 @@ strip_leading_char c a@(x:xs)
 -}
 print_usage :: IO ()
 print_usage = do
-  putStrLn "pasty 0.0   (C) 2008 Markus Dittrich"
+  putStrLn "pasty 0.1   (C) 2008 Markus Dittrich"
   putStrLn "Usage: pasty <options> file1 file2\n"
   putStrLn "Options:"
-  putStrLn "\t-c, --colspecs <columnspecs>"
-  putStrLn "\t-u, --outsep   string separating output columns"
-  putStrLn "\t               (default: space)"
-  putStrLn "\t-i, --insep    char used for parsing input" 
-  putStrLn "\t               columns greedily (default: space)"
+  putStrLn "\t-c, --colspecs   columnspecs for parsing"
+  putStrLn "\t-u, --outsep     string separating output columns"
+  putStrLn "\t                 (default: space)"
+  putStrLn "\t-i, --insep      char used for parsing input" 
+  putStrLn "\t                 columns greedily (default: space)"
+  putStrLn "\t-p, --pastespecs columnspecs for pasting"
   putStrLn ""
 

@@ -24,7 +24,6 @@
 
 module Parser ( ColumnSpec
               , extract_columns
-              , paste
               , read_files
               ) where
 
@@ -50,33 +49,6 @@ type Column       = [B.ByteString]
 
 
 {-|
-  concatenate a collection of columns row wise and return 
-  the resulting concatenated column
--}
-paste :: B.ByteString -> [Column] -> Column
-paste _ []           = []
-paste separator cols = paste_column [] separator cols 
-
-  where
-    -- past columns
-    paste_column :: Column -> B.ByteString -> [Column] -> Column
-    paste_column acc _ []       = acc
-    paste_column acc sep (x:xs) = 
-      paste_column (walk_column [] acc sep x) sep xs
-
-    -- walk down a column and append content to accumulator row-wise 
-    -- FIXME: The call to revers after each column walk sucks and is
-    --        inefficient; is there a way to get rid of it??       -}
-    walk_column :: Column -> Column -> B.ByteString -> Column -> Column
-    walk_column acc [] _ [] = reverse acc
-    walk_column acc [] s (r:rs) = walk_column (r:acc) [] s rs
-    walk_column acc (l:ls) s [] = walk_column (l:acc) ls s []
-    walk_column acc (l:ls) s (r:rs) =
-      walk_column (cat_columns s l r:acc) ls s rs
-
-
-
-{-|
   extract the columns corresponding to the ColSpecs for all
   files
 -}
@@ -89,7 +61,7 @@ extract_columns spec xs
   where
   -- extract relevant command lin options
   itemSep = inputSep spec
-  colList = columnSpec spec
+  colList = parseSpec spec
 
   -- grab all selected columns from the input files
   grab_all_columns :: [Column] -> [ColumnSpec] -> [Column] -> [Column]

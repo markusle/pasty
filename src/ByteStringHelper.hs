@@ -38,7 +38,7 @@ import qualified Data.ByteString as B
 import qualified Data.ByteString.Char8 as BC
 import Data.Char
 import Data.Word
-import Debug.Trace
+--import Debug.Trace
 
 {-|
   convert char into Word8

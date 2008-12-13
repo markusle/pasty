@@ -49,16 +49,18 @@ type ColumnSpec  = [Int]
   data structure for keeping track of the parsed command line info
 -}
 data OutputSpec = OutputSpec {
-    columnSpec :: [ColumnSpec]
-  , inputSep   :: Word8
-  , outputSep  :: B.ByteString
+    parseSpec :: [ColumnSpec]
+  , pasteSpec :: ColumnSpec
+  , inputSep  :: Word8
+  , outputSep :: B.ByteString
 }
 
 defaultOutputSpec :: OutputSpec
 defaultOutputSpec = OutputSpec {
-    columnSpec = []
-  , inputSep   = spaceW
-  , outputSep  = space
+    parseSpec = []
+  , pasteSpec = []
+  , inputSep  = spaceW
+  , outputSep = space
 }
 
 

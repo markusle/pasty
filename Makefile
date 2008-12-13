@@ -12,10 +12,10 @@ GHC_FLAGS_DEVEL = -O -fwarn-incomplete-patterns -fwarn-incomplete-record-updates
 GHC_FLAGS_RELEASE = -O2
 
 OBJECTS = src/pasty.hs src/ByteStringHelper.hs \
-	  src/CommandLineParser.hs src/Parser.hs src/IO.hs \
-          src/PastyData.hs
+	  src/CommandLineParser.hs src/IO.hs src/Parser.hs \
+          src/Paster.hs src/PastyData.hs src
 
-#all: debug
+all: debug
 
 pasty: $(OBJECTS)
 	ghc -i./src $(GHC_FLAGS_RELEASE) --make src/pasty.hs
@@ -25,7 +25,7 @@ debug: $(OBJECTS)
 	ghc -i./src $(GHC_FLAGS_DEVEL) --make src/pasty.hs
 
 test: pasty
-	make -C test/
+	make -C test
 
 install:
 	install -d $(docdir)

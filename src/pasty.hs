@@ -30,7 +30,8 @@ import System.Environment
 -- local imports
 import CommandLineParser
 import Parser
-import PastyData
+import Paster
+--import PastyData
 
 
 {-|
@@ -47,4 +48,4 @@ main =
       Just (specs,files) -> do
           contents <- read_files [] files
           let columns = extract_columns specs contents
-          mapM_ B.putStrLn $ paste (outputSep specs) columns
+          mapM_ B.putStrLn $ paste specs columns
