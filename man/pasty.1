@@ -45,11 +45,40 @@ for each input file.
 \fI--outsep SEPARATOR
 
 
-Change the separator string between the columns in the output from 
-the default single space to the string given in SEPARATOR STRING.
+Specify the \fBstring\fR used as separator between the columns in the 
+output. Default is a single whitespace. 
 NOTE: In order to avoid that the shell interprets certain characters,
-the string might need to be quoted.Quoting is also necessary when
-SEPARATOR consists of or contains whitespace characters.
+the string might need to be quoted. 
+
+
+.TP 4m
+.PD 0
+\fI-i SEPARATOR
+.TP
+.PD
+\fI--insep SEPARATOR
+
+
+Specify the \fBcharacter\fR used as separator for the input file 
+columns. The input separator is applied greedily, i.e., columns
+separated by multiple instances of input separator are treated as
+a single one. The default separator is a single whitespace character
+(" ").
+
+
+.TP 4m
+.PD 0
+\fI-p PASTE_SPEC
+.TP
+.PD
+\fI--pastespecs PASTE_SPEC
+
+
+Paste the columns in the order given in PASTE_SPEC. PASTE_SPEC
+is a comma separated list of zero based column indices (0 refers
+to the first parsed column, 1 to the second parsed column, etc.).
+PASTE_SPEC can list all parsed columns in any order and columns
+may appear multiple times.
 
 
 .SH "EXAMPLES"
@@ -83,7 +112,24 @@ output file.
 Paste the zeroth columns of file1, file2, file3, and file4 into the
 output file and separate the columns by a double colon.
 .PP
-
+.nf
+.B pasty -c 0 -i : file1 file2 
+.fi
+Paste the zeroth columns of file1 and file2. The columns in each
+file are assumed to be separated by any number of colons.
+.PP
+.B pasty -c 0,1 -p 3,2,1,0 file1 file2 
+.fi
+Read columns 0 and 1 from file1 and file2 and paste them in
+reverse order.
+.PP
+.PP
+.B pasty -c 0,1 -p 0,1,0,2,0,3 file1 file2 
+.fi
+Read columns 0 and 1 from file1 and file2 and paste 
+column 0 of file1 combined with column 1 file1 and
+columns 0,1 of file2.
+.PP
 
 
 .SH "REPORTING BUGS"

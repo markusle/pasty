@@ -77,7 +77,7 @@ parse_args args =
 
   where
     -- generic parse function for option without optstring
-    check_option :: String -> String -> [String] -> (Bool,[String])
+    {-check_option :: String -> String -> [String] -> (Bool,[String])
     check_option = check_option_h []
 
       where
@@ -87,7 +87,7 @@ parse_args args =
         check_option_h acc shortOp longOp (x:xs)
           | (x == shortOp) || (x == longOp) = (True, reverse acc ++ xs)
           | otherwise = check_option_h (x:acc) shortOp longOp xs
-
+-}
 
     -- generic parse function for option with mandatory optstring
     check_option_arg :: (String -> a) -> a -> String -> String 
