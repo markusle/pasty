@@ -5,7 +5,7 @@ license-file:  COPYING
 copyright:     (c) 2008 Markus Dittrich
 category:      console
 Synopsis:      A simple command line pasting utility
-Description:   A simple command line utility for extracting 
+Description:   pasty is simple command line utility for extracting 
                a collection of columns from any number of input
                files and pasting them in a specified order to 
                stdout.
