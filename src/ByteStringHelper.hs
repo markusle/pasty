@@ -66,13 +66,13 @@ space = BC.pack " "
 
 
 {-|
-  if the last element in a ByteString is a newline,
-  discard it, otherwise splitting the ByteString by
-  newlines will result in an empty last element
+  if the last element(s) in a ByteString are newlines,
+  discard them, otherwise splitting the ByteString by
+  newlines will result in empty elements
 -}
 remove_last_newline :: B.ByteString -> B.ByteString
 remove_last_newline string 
-  | B.last string == newLineW  = B.init string 
+  | B.last string == newLineW  = remove_last_newline $ B.init string 
   | otherwise                  = string
 
 

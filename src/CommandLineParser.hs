@@ -24,14 +24,17 @@
 -}
 module CommandLineParser ( parse_args
                          , print_usage
+                         , ComLToks(..)
                          ) where
 
--- imports
+
+-- imports 
 import qualified Data.ByteString as B 
 import qualified Data.ByteString.Char8 as BC
+import Control.Monad.State
 import Data.List
 import Data.Word
---import Debug.Trace
+import Text.Printf
 
 -- local imports
 import ByteStringHelper
@@ -39,92 +42,168 @@ import PastyData
 
 
 {-|
-  parse the command line and extract filenames and which columns 
-  to extract from each of the files.
-  If we encounter a something that looks like an option (i.e.
-  starts with a dash) and we don't know it we return Nothing to
-  force a print_usage; otherwise we'll try to read the item as a 
-  file which will of course fail.
+  data structure for describing how command line options are
+  to be parsed
 -}
-parse_args :: [String] -> Maybe (OutputSpec, [String])
-parse_args []   = Nothing
-parse_args args = 
+data ComLParseTok a = ComLParseTok {
+    shortOp    :: String
+  , longOp     :: String
+  , proc       :: (String -> a)
+  , defaultVal :: a
+  , info       :: String
+}
 
-  let
-    (colSpecs,rem1)     = check_option_arg parse_column_specs [] 
-                            "-c" "--colspecs" args
-    (outSep,rem2)       = check_option_arg BC.pack space 
-                            "-u" "--outsep" rem1
-    (inSep, rem3)       = check_option_arg extract_word8 spaceW
-                            "-i" "--insep" rem2
-    (pasteSpecs, files) = check_option_arg parse_paste_specs []
-                            "-p" "--pastespecs" rem3
-    colSpecsPadded      = pad_column_list colSpecs $ length files
+
+{-|
+  instructions on how to parse the parsing specs [sic]
+-}
+parseSpecTok :: ComLParseTok [ColumnSpec]
+parseSpecTok = ComLParseTok {
+    shortOp    = "-r"
+  , longOp     = "--parsespecs"
+  , proc       = process_parse_specs
+  , defaultVal = []
+  , info       = "columnspecs for parsing (a1,..:b1,...)"
+} 
+
+
+{-|
+  instructions on how to parse for pasting specs
+-}
+pasteSpecTok :: ComLParseTok ColumnSpec
+pasteSpecTok = ComLParseTok {
+    shortOp    = "-w"
+  , longOp     = "--pastespecs"
+  , proc       = process_paste_specs
+  , defaultVal = []
+  , info       = "columnspecs for pasting (c1,c2,...)"
+} 
+
+
+{-|
+  instructions on how to parse for the input separator
+-}
+insepSpecTok :: ComLParseTok Word8
+insepSpecTok = ComLParseTok {
+    shortOp    = "-i"
+  , longOp     = "--insep"
+  , proc       = extract_word8
+  , defaultVal = spaceW
+  , info       = "char separator for input columns"
+} 
+
+
+{-|
+  instructions on how to parse for the input separator
+-}
+outsepSpecTok :: ComLParseTok B.ByteString
+outsepSpecTok = ComLParseTok {
+    shortOp    = "-o"
+  , longOp     = "--outsep"
+  , proc       = BC.pack
+  , defaultVal = space
+  , info       = "string separator for output columns"
+} 
+
+
+{-|
+  definitions for State Monad used for parsing the command
+  line
+-}
+data ComLToks = ComLToks { options:: [String], status :: Bool } 
+  deriving(Show)
+type ParseState a = State ComLToks a
+
+
+
+{-|
+  main command line parser
+-}
+parse_args :: ParseState (OutputSpec,[String])
+parse_args = 
+  
+  parse_option parseSpecTok  >>= \parseS ->
+  parse_option pasteSpecTok  >>= \pasteS -> 
+  parse_option outsepSpecTok >>= \outsep ->
+  parse_option insepSpecTok  >>= \insep  ->
+  extract_files              >>= \files  ->
+        
+  return 
+    (OutputSpec { parseSpec = pad_column_list parseS $ length files
+                , pasteSpec = pasteS
+                , inputSep  = insep
+                , outputSep = outsep }
+    ,files)
+
+
+{-|
+  the list of files should now be the remainder of
+  the command line string after all command line 
+  options have been parsed for; we'll also check
+  in a very crude way if there are any stray
+  command line options left
+-}
+extract_files :: ParseState [String]
+extract_files = get >>= \state  ->
+                 let files = options state in
+                 if check_for_invalid_opts files then
+                   let newState = state { status = False } in
+                   put newState >>
+                   return []
+                 else
+                   return files
+
+
+{-|
+  check final list of files for any potentially invalid
+  command line options
+-}
+check_for_invalid_opts :: [String] -> Bool
+check_for_invalid_opts [] = False
+check_for_invalid_opts (x:xs)
+  | head x == '-'         = True
+  | otherwise             = check_for_invalid_opts xs
+
+
+
+{-|
+  parser for an individual command line option
+-}
+parse_option :: ComLParseTok a -> ParseState a
+parse_option parseTokens =
+
+  get >>= \state ->
+  let 
+    (e,state') = parse_option' parseTokens state
   in
-    -- check if list of files contains items starting with a dash
-    -- which most likely indicated an invalid command line option
-    if check_for_invalid_opts files 
-      then
-        Nothing
-      else
-        Just ( defaultOutputSpec { parseSpec = colSpecsPadded
-                                 , pasteSpec = pasteSpecs
-                                 , inputSep   = inSep
-                                 , outputSep  = outSep 
-                                 }
-             , files)
-
+    put state' >>
+    return e
 
   where
-    -- generic parse function for option without optstring
-    {-check_option :: String -> String -> [String] -> (Bool,[String])
-    check_option = check_option_h []
+    parse_option' :: ComLParseTok a -> ComLToks -> (a,ComLToks)
+    parse_option' (ComLParseTok { proc = f 
+                                , shortOp = sOp
+                                , longOp = lOp
+                                , defaultVal = def })
+                   coms@(ComLToks { options = xs })   =
 
-      where
-        check_option_h :: [String] -> String -> String -> [String] 
-                          -> (Bool,[String])
-        check_option_h acc _ _ [] = (False, reverse acc)
-        check_option_h acc shortOp longOp (x:xs)
-          | (x == shortOp) || (x == longOp) = (True, reverse acc ++ xs)
-          | otherwise = check_option_h (x:acc) shortOp longOp xs
--}
+      -- see if we have the short or long option
+      case findIndex (==sOp) xs `mplus` findIndex (==lOp) xs of
+        Nothing -> (def,coms)
+        Just i  ->
+          -- see if we have a data element (it should not
+          -- begin with a '-', otherwise we set the status
+          -- to False
+          if ( length xs < i+2 || head value == '-' ) then
+            (def, coms { status = False })
+          else
+            (processedValue,coms { options = remainder })
 
-    -- generic parse function for option with mandatory optstring
-    check_option_arg :: (String -> a) -> a -> String -> String 
-                    -> [String] -> (a,[String])
-    check_option_arg = check_option_arg_h []
-
-      where
-        check_option_arg_h :: [String] -> (String -> a) -> a -> String 
-                              -> String -> [String] -> (a,[String])
-        check_option_arg_h acc _ def _ _ []     = (def, reverse acc)
-        check_option_arg_h acc f def shortOp longOp (x:y:zs)    
-          | (x == shortOp) || (x == longOp )  = 
-                (f y, reverse acc ++ zs)
-          | otherwise = check_option_arg_h (x:acc) f def shortOp 
-                          longOp $ y:zs
-
-        check_option_arg_h acc f def shortOp longOp (x:xs) = 
-              check_option_arg_h (x:acc) f def shortOp longOp xs
-
-
-    -- check final list of files for any potentially invalid
-    -- command line options
-    check_for_invalid_opts :: [String] -> Bool
-    check_for_invalid_opts [] = False
-    check_for_invalid_opts (x:xs)
-      | head x == '-'         = True
-      | otherwise             = check_for_invalid_opts xs
-
-
-    -- extract a Word8 from a String passed on the command line
-    -- if the string has more than a single char we simple pick
-    -- the first one for now; if the string is empty we take the
-    -- default
-    extract_word8 :: String -> Word8
-    extract_word8 item 
-      | length item == 0    = spaceW
-      | otherwise           = char_to_Word8 $ head item
+          where
+            option         = xs!!i
+            value          = xs!!(i+1)
+            processedValue = f value
+            remainder      = delete option $ delete value xs
 
 
 
@@ -132,8 +211,8 @@ parse_args args =
   parses the user specified list providing the order in with
   the parsed columns are to be punched
 -}
-parse_paste_specs :: String -> ColumnSpec
-parse_paste_specs = parse_column []
+process_paste_specs :: String -> ColumnSpec
+process_paste_specs = parse_column []
 
 
 
@@ -141,8 +220,8 @@ parse_paste_specs = parse_column []
   parses the user specified list of columns to be extracted for
   each file
 -}
-parse_column_specs :: String -> [ColumnSpec]
-parse_column_specs colSpec = 
+process_parse_specs :: String -> [ColumnSpec]
+process_parse_specs colSpec = 
   
   let
     perFile = parse_per_file_columns [] colSpec
@@ -165,8 +244,9 @@ parse_column_specs colSpec =
         parse_per_file_columns (next:acc) rest
 
 
+
 {-|
-  parse list of ints separated by , 
+  parse list of ints separated by ',' 
 -}
 parse_column :: ColumnSpec -> String -> ColumnSpec
 parse_column acc []  = acc
@@ -204,20 +284,35 @@ strip_leading_char c a@(x:xs)
   | otherwise = a
 
 
+{-|
+  extract a Word8 from a String passed on the command line
+  if the string has more than a single char we simple pick
+  the first one for now; if the string is empty we take the
+  default
+-}
+extract_word8 :: String -> Word8
+extract_word8 item
+  | length item == 0    = spaceW
+  | otherwise           = char_to_Word8 $ head item
+
 
 {-|
   print usage information for pasty
 -}
 print_usage :: IO ()
-print_usage = do
-  putStrLn "pasty 0.1   (C) 2008 Markus Dittrich"
-  putStrLn "Usage: pasty <options> file1 file2\n"
-  putStrLn "Options:"
-  putStrLn "\t-c, --colspecs   columnspecs for parsing"
-  putStrLn "\t-u, --outsep     string separating output columns"
-  putStrLn "\t                 (default: space)"
-  putStrLn "\t-i, --insep      char used for parsing input" 
-  putStrLn "\t                 columns greedily (default: space)"
-  putStrLn "\t-p, --pastespecs columnspecs for pasting"
-  putStrLn ""
+print_usage = 
+  do
+    putStrLn "pasty 0.1   (C) 2008 Markus Dittrich"
+    putStrLn "Usage: pasty <options> file1 file2\n"
+    putStrLn "Options:"
+    print_info parseSpecTok
+    print_info pasteSpecTok
+    print_info insepSpecTok
+    print_info outsepSpecTok
 
+    where
+      print_info :: ComLParseTok a -> IO ()
+      print_info tok = 
+        do
+          printf "\t%s, %-13s        %s\n" (shortOp tok) (longOp tok)
+            (info tok)

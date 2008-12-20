@@ -23,19 +23,12 @@
   command line
 -}
 module PastyData ( OutputSpec(..)
-                 , defaultOutputSpec
                  , ColumnSpec
                  ) where
 
 -- imports
 import qualified Data.ByteString as B 
-import qualified Data.ByteString.Char8 as BC
 import Data.Word
-
-
--- local imports
-import ByteStringHelper
-
 
 
 {-|
@@ -54,14 +47,4 @@ data OutputSpec = OutputSpec {
   , inputSep  :: Word8
   , outputSep :: B.ByteString
 }
-
-defaultOutputSpec :: OutputSpec
-defaultOutputSpec = OutputSpec {
-    parseSpec = []
-  , pasteSpec = []
-  , inputSep  = spaceW
-  , outputSep = space
-}
-
-
 

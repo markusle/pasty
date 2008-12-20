@@ -25,27 +25,32 @@
 
 -- imports
 import qualified Data.ByteString as B
+import Control.Monad.State
 import System.Environment
 
 -- local imports
 import CommandLineParser
+import IO
 import Parser
 import Paster
---import PastyData
 
 
 {-|
   main driver
 -}
 main :: IO ()
-main = 
- 
-  do
-    commandLine <- getArgs
-    let parsedCommands = parse_args commandLine
-    case parsedCommands of
-      Nothing -> print_usage 
-      Just (specs,files) -> do
-          contents <- read_files [] files
-          let columns = extract_columns specs contents
-          mapM_ B.putStrLn $ paste specs columns
+main = getArgs >>= \x ->
+       let 
+         -- define the intial state for the State Monad used
+         -- for parsing the command line
+         initialState = ComLToks { options = x, status = True }
+         ((specs,files),state) = runState parse_args $ initialState
+       in
+         -- if something bad happened or no files where supplied
+         -- we bail out
+         if status state == False || null files 
+           then print_usage
+           else 
+             read_files [] files >>= \y ->
+             let columns = extract_columns specs y in
+               mapM_ B.putStrLn $ paste specs columns

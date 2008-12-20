@@ -24,7 +24,6 @@
 
 module Parser ( ColumnSpec
               , extract_columns
-              , read_files
               ) where
 
 
@@ -37,7 +36,6 @@ import Data.Word
 
 -- local imports
 import ByteStringHelper
-import IO
 import PastyData
 
 
