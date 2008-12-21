@@ -1,4 +1,4 @@
-.TH "pasty" "1" "Nov 2008" "pasty-0.1" "pasty"
+.TH "pasty" "1" "Dec 2008" "pasty-0.1" "pasty"
 .SH "NAME"
 pasty \- A simple command line pasting utility
 .SH "SYNOPSIS"
@@ -18,38 +18,6 @@ what columns to extract from each of the input files. Without the
 specifier, pasty will paste complete rows for each file and the
 output is then identical to coreutil's paste command.
 
-.TP 4m
-.PD 0
-\fI-c COLUMN_SPEC
-.TP
-.PD
-\fI--colspecs COLUMN_SPEC\fR
-
-
-Extract the columns specified in COLUMN_SPEC for each file provided
-on the command line. COLUMN_SPEC is a colon separated list of 
-FILE_SPECs. FILE_SPEC is a comma separated list of zero based column
-indices to be extracted for each input file and pasted into the output
-file. Column indices larger than the number of columns are ignored and
-the number of FILE_SPEC elements can be smaller than the total number 
-of input files. In this case, the last FILE_SPEC provided is used for 
-all remaining files. Without COLUMN_SPEC, all columns are pasted
-for each input file.
-
-
-.TP 4m
-.PD 0
-\fI-u SEPARATOR
-.TP
-.PD
-\fI--outsep SEPARATOR
-
-
-Specify the \fBstring\fR used as separator between the columns in the 
-output. Default is a single whitespace. 
-NOTE: In order to avoid that the shell interprets certain characters,
-the string might need to be quoted. 
-
 
 .TP 4m
 .PD 0
@@ -68,7 +36,40 @@ a single one. The default separator is a single whitespace character
 
 .TP 4m
 .PD 0
-\fI-p PASTE_SPEC
+\fI-o SEPARATOR
+.TP
+.PD
+\fI--outsep SEPARATOR
+
+
+Specify the \fBstring\fR used as separator between the columns in the 
+output. Default is a single whitespace. 
+NOTE: In order to avoid that the shell interprets certain characters,
+the string might need to be quoted. 
+
+
+.TP 4m
+.PD 0
+\fI-r PARSE_SPEC
+.TP
+.PD
+\fI--parsespecs PARSE_SPEC\fR
+
+
+Extract the columns specified in PARSE_SPEC for each file provided
+on the command line. PARSE_SPEC is a colon separated list of 
+FILE_SPECs. FILE_SPEC is a comma separated list of zero based column
+indices to be extracted for each input file and pasted into the output
+file. Column indices larger than the number of columns are ignored and
+the number of FILE_SPEC elements can be smaller than the total number 
+of input files. In this case, the last FILE_SPEC provided is used for 
+all remaining files. Without PARSE_SPEC, all columns are pasted
+for each input file.
+
+
+.TP 4m
+.PD 0
+\fI-w PASTE_SPEC
 .TP
 .PD
 \fI--pastespecs PASTE_SPEC

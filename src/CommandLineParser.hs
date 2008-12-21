@@ -302,7 +302,7 @@ extract_word8 item
 print_usage :: IO ()
 print_usage = 
   do
-    putStrLn "pasty 0.1   (C) 2008 Markus Dittrich"
+    putStrLn "pasty 0.1 (C) 2008 Markus Dittrich"
     putStrLn "Usage: pasty <options> file1 file2\n"
     putStrLn "Options:"
     print_info parseSpecTok
