@@ -15,7 +15,7 @@ OBJECTS = src/pasty.hs src/ByteStringHelper.hs \
 	  src/CommandLineParser.hs src/IO.hs src/Parser.hs \
           src/Paster.hs src/PastyData.hs src
 
-all: debug
+all: pasty
 
 pasty: $(OBJECTS)
 	ghc -i./src $(GHC_FLAGS_RELEASE) --make src/pasty.hs
