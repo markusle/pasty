@@ -1,6 +1,6 @@
 {-----------------------------------------------------------------
  
-  (c) 2008 Markus Dittrich 
+  (c) 2008-2013 Markus Dittrich 
  
   This program is free software; you can redistribute it 
   and/or modify it under the terms of the GNU General Public 
@@ -30,7 +30,7 @@ module IO ( read_files
 
 -- imports
 import qualified Data.ByteString as B
-import System.IO
+import Control.Exception (try)
 import System.IO.Error
 
 

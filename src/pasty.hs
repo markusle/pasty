@@ -1,6 +1,6 @@
 {-----------------------------------------------------------------
  
-  (c) 2008 Markus Dittrich 
+  (c) 2008-2013 Markus Dittrich 
  
   This program is free software; you can redistribute it 
   and/or modify it under the terms of the GNU General Public 
@@ -24,7 +24,7 @@
 
 
 -- imports
-import qualified Data.ByteString as B
+import qualified Data.ByteString.Char8 as B
 import Control.Monad.State
 import System.Environment
 
@@ -44,11 +44,11 @@ main = getArgs >>= \x ->
          -- define the intial state for the State Monad used
          -- for parsing the command line
          initialState = ComLToks { options = x, status = True }
-         ((specs,files),state) = runState parse_args $ initialState
+         ((specs,files), aState) = runState parse_args $ initialState
        in
          -- if something bad happened or no files where supplied
          -- we bail out
-         if status state == False || null files 
+         if status aState == False || null files 
            then print_usage
            else 
              read_files [] files >>= \y ->

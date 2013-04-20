@@ -1,6 +1,6 @@
 {-----------------------------------------------------------------
  
-  (c) 2008 Markus Dittrich 
+  (c) 2008-2013 Markus Dittrich 
  
   This program is free software; you can redistribute it 
   and/or modify it under the terms of the GNU General Public 
@@ -30,8 +30,6 @@ module Parser ( ColumnSpec
 
 -- imports
 import qualified Data.ByteString as B
-import qualified Data.ByteString.Char8 as BC
-import Data.List
 import Data.Word
 
 -- local imports

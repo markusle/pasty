@@ -1,6 +1,6 @@
 {-----------------------------------------------------------------
  
-  (c) 2008 Markus Dittrich 
+  (c) 2008-2013 Markus Dittrich 
  
   This program is free software; you can redistribute it 
   and/or modify it under the terms of the GNU General Public 
@@ -144,10 +144,10 @@ parse_args =
   command line options left
 -}
 extract_files :: ParseState [String]
-extract_files = get >>= \state  ->
-                 let files = options state in
+extract_files = get >>= \aState  ->
+                 let files = options aState in
                  if check_for_invalid_opts files then
-                   let newState = state { status = False } in
+                   let newState = aState { status = False } in
                    put newState >>
                    return []
                  else
@@ -172,11 +172,11 @@ check_for_invalid_opts (x:xs)
 parse_option :: ComLParseTok a -> ParseState a
 parse_option parseTokens =
 
-  get >>= \state ->
+  get >>= \aState ->
   let 
-    (e,state') = parse_option' parseTokens state
+    (e,aState') = parse_option' parseTokens aState
   in
-    put state' >>
+    put aState' >>
     return e
 
   where
@@ -302,7 +302,7 @@ extract_word8 item
 print_usage :: IO ()
 print_usage = 
   do
-    putStrLn "pasty 0.1 (C) 2008 Markus Dittrich"
+    putStrLn "pasty 0.1 (C) 2008-2013 Markus Dittrich"
     putStrLn "Usage: pasty <options> file1 file2\n"
     putStrLn "Options:"
     print_info parseSpecTok
